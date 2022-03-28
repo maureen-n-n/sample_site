@@ -1,25 +1,22 @@
 from flask import Flask, render_template
+from flask_socketio import SocketIO
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'vnkdjnfjknfl1232#'
 
-@app.route("/")
-def index():
 
-    # Load current count
-    f = open("count.txt", "r")
-    count = int(f.read())
-    f.close()
+@app.route('/')
+def sessions():
+    return render_template('index.html')
 
-    # Increment the count
-    count += 1
+def messageReceived(methods=['GET', 'POST']):
+    print('message was received!!!')
 
-    # Overwrite the count
-    f = open("count.txt", "w")
-    f.write(str(count))
-    f.close()
+@socketio.on('my event')
+def handle_my_custom_event(json, methods=['GET', 'POST']):
+    print('received my event: ' + str(json))
+    socketio.emit('my response', json, callback=messageReceived)
 
-    # Render HTML with count variable
-    return render_template("index.html", count=count)
-
-if __name__ == "__main__":
-    app.run()
+if __name__ == '__main__':
+    # Threaded option to enable multiple instances for multiple user access support
+    app.run(threaded=True, port=5000)
